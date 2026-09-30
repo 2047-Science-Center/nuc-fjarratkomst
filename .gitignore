@@ -1,3 +1,4 @@
-# Lokala åtkomst-uppgifter som skriptet skapar på NUC:en — aldrig i git.
+# Lokala hemligheter/uppgifter — aldrig i git.
+remote.env
 nuc-fjarratkomst.txt
 *-fjarratkomst.txt

@@ -26,9 +26,29 @@ När det är klart visas (och sparas i `~/nuc-fjarratkomst.txt`):
 - **RustDesk-ID** + **lösenord**
 
 ## 2. På din dator (en gång)
-- **Tailscale:** installera från Mac App Store / tailscale.com, logga in med **samma konto**.
-- **RustDesk:** ladda ned från rustdesk.com (om du vill se skärmen).
-- SSH finns redan inbyggt i Terminal (macOS/Linux) resp. via `ssh` på Windows.
+- **Tailscale:** installera från Mac App Store eller tailscale.com, logga in med **samma konto** som NUC:arna använder.
+- **RustDesk:** ladda ned Mac-appen från rustdesk.com (om du vill se skärmen).
+- **SSH:** finns redan i Terminal (macOS/Linux) / `ssh` på Windows.
+- **SSH-nyckel** (för lösenordsfri inloggning) — har du ingen, skapa en:
+  ```bash
+  ls ~/.ssh/id_ed25519.pub 2>/dev/null || ssh-keygen -t ed25519
+  cat ~/.ssh/id_ed25519.pub        # hela raden → klistras in i remote.env (SSH_PUBKEY)
+  ```
+
+## Klick-fri utrullning (flera stationer)
+Vill du slippa inloggningslänk och lösenord på varje NUC — fyll i `remote.env` **en gång**
+och återanvänd den på alla:
+1. Skapa en **återanvändbar Tailscale auth-nyckel**: login.tailscale.com/admin/settings/keys → *Reusable*.
+2. Kopiera mallen och fyll i auth-nyckel + din SSH-publika nyckel:
+   ```bash
+   cd ~/nuc-fjarratkomst
+   cp remote.env.example remote.env
+   nano remote.env        # TS_AUTHKEY, SSH_PUBKEY, ev. TS_HOSTNAME
+   bash setup-remote.sh
+   ```
+Då ansluter NUC:en till Tailscale automatiskt och du kan SSH:a in utan lösenord direkt.
+`remote.env` är gitignore:ad — hemligheterna stannar lokalt. Sätt `TS_HOSTNAME` per NUC
+(`flykten-1`, `forhandling-1` …) så får de rätt namn direkt.
 
 ## 3. Ansluta
 **Terminal:**
