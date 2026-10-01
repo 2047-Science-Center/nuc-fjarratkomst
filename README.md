@@ -10,7 +10,7 @@ Tre lager:
 |---|---|---|
 | Nätverk (nå NUC:en alls) | **Tailscale** | Privat mesh-VPN — NUC:en dyker upp med namn/IP hos dig |
 | Terminal (nästan allt) | **SSH** | Uppdatera appen, `systemctl`, redigera config, touch-mappning |
-| Skärm (se & klicka) | **RustDesk** | Se stationen, köra pavucontrol/EasyEffects, klicka i GUI |
+| Skärm (se & klicka) | **VNC över Tailscale** (rek.) eller RustDesk | Se stationen, köra GUI, klicka — macOS-klient inbyggd |
 
 ## 1. På NUC:en (en gång)
 ```bash
@@ -34,6 +34,23 @@ När det är klart visas (och sparas i `~/nuc-fjarratkomst.txt`):
   ls ~/.ssh/id_ed25519.pub 2>/dev/null || ssh-keygen -t ed25519
   cat ~/.ssh/id_ed25519.pub        # hela raden → klistras in i remote.env (SSH_PUBKEY)
   ```
+
+## Skärm via VNC — rekommenderas (gratis, inbyggt i macOS)
+RustDesks publika server kan vara "ej redo". Stabilare: dela den fysiska skärmen via
+**VNC över Tailscale** — macOS har klienten inbyggd, inget konto behövs, inga servrar
+utanför ditt eget nät.
+
+På NUC:en (efter `setup-remote.sh`, och med en inloggad grafisk session på `:0`):
+```bash
+bash ~/nuc-fjarratkomst/setup-vnc.sh
+```
+Installerar x11vnc + en systemd-tjänst som speglar `:0` och startar vid boot. Lösenordet
+tas från `VNC_PW` i `remote.env` (max 8 ASCII-tecken, inga å/ä/ö) — annars frågar den.
+
+På Macen: **Finder → Cmd+K → `vnc://<tailscale-ip>`** → lösenordet.
+
+Krav: NUC:en måste **autologga in** till ett skrivbord (annars finns ingen skärm att
+spegla) och Tailscale måste vara igång. Bara Tailscale-adresser (100.x) släpps in.
 
 ## Klick-fri utrullning (flera stationer)
 Vill du slippa inloggningslänk och lösenord på varje NUC — fyll i `remote.env` **en gång**
