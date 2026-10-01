@@ -29,6 +29,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 TS_AUTHKEY="${TS_AUTHKEY:-}"      # Tailscale auth-nyckel (tskey-…) → klick-fri anslutning
 TS_HOSTNAME="${TS_HOSTNAME:-}"    # enhetsnamn i Tailscale, t.ex. flykten-1
+TS_TAG="${TS_TAG:-}"             # tagg, t.ex. tag:nuc → TAGGAD enhet = ingen nyckel-utgång
 SSH_PUBKEY="${SSH_PUBKEY:-}"      # din publika SSH-nyckel (ssh-ed25519 AAAA…) → lösenordsfri SSH
 RUSTDESK_PW="${RUSTDESK_PW:-}"    # valfritt fast RustDesk-lösen (annars slumpas)
 
@@ -57,6 +58,8 @@ if ! command -v tailscale >/dev/null 2>&1; then
 fi
 UP_ARGS=()
 [ -n "$TS_HOSTNAME" ] && UP_ARGS+=("--hostname=$TS_HOSTNAME")
+# Taggad enhet → ingen nyckel-utgång (aldrig utloggad). Kräver tag:nuc i Access controls.
+[ -n "$TS_TAG" ] && UP_ARGS+=("--advertise-tags=$TS_TAG")
 if [ -n "$TS_AUTHKEY" ]; then
   say "Ansluter Tailscale med auth-nyckel (klick-fritt)"
   sudo tailscale up --authkey="$TS_AUTHKEY" "${UP_ARGS[@]}"
