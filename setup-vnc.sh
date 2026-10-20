@@ -57,13 +57,21 @@ say "Skapar systemd-tjänst x11vnc"
 sudo tee /etc/systemd/system/x11vnc.service >/dev/null <<EOF
 [Unit]
 Description=x11vnc skärmdelning av :0 (över Tailscale)
-After=graphical.target
-Wants=graphical.target
+After=network-online.target
+# Ge aldrig upp pga omstarts-takt — vi väntar tills :0 finns (se nedan).
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
+# Vänta in den grafiska sessionen (:0) innan start — oavsett om den skapas av
+# display manager (autologin) eller startx. Löser att tjänsten annars startar
+# FÖRE skärmen efter boot/strömavbrott och ger upp (då syns ingen skärm förrän
+# man startar om tjänsten manuellt).
+ExecStartPre=/bin/sh -c 'for i in \$(seq 1 60); do [ -e /tmp/.X11-unix/X0 ] && exit 0; sleep 2; done; exit 0'
 ExecStart=/usr/bin/x11vnc -display :0 -auth guess -rfbauth $PASSFILE -forever -loop -shared -noxdamage -allow 100. -rfbport 5900
-Restart=on-failure
+# Alltid om: om :0 ännu inte finns (eller försvinner) startar systemd om tills
+# skärmen är uppe → överlever reboot/strömavbrott utan manuell omstart.
+Restart=always
 RestartSec=5
 
 [Install]
